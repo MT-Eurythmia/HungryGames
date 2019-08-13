@@ -477,6 +477,7 @@ minetest.register_abm({
 	neighbors = {
 		"air",
 		"group:grass",
+		"group:dry_grass",
 		"default:snow",
 	},
 	interval = 6,
@@ -503,8 +504,11 @@ minetest.register_abm({
 		-- Snow check is cheapest, so comes first
 		if name == "default:snow" then
 			minetest.set_node(pos, {name = "default:dirt_with_snow"})
+		-- Most likely case first
 		elseif minetest.get_item_group(name, "grass") ~= 0 then
 			minetest.set_node(pos, {name = "default:dirt_with_grass"})
+		elseif minetest.get_item_group(name, "dry_grass") ~= 0 then
+			minetest.set_node(pos, {name = "default:dirt_with_dry_grass"})
 		end
 	end
 })
@@ -516,7 +520,7 @@ minetest.register_abm({
 
 minetest.register_abm({
 	label = "Grass covered",
-	nodenames = {"group:spreading_dirt_type", "default:dry_dirt_with_dry_grass"},
+	nodenames = {"group:spreading_dirt_type"},
 	interval = 8,
 	chance = 50,
 	catch_up = false,
@@ -527,11 +531,7 @@ minetest.register_abm({
 		if name ~= "ignore" and nodedef and not ((nodedef.sunlight_propagates or
 				nodedef.paramtype == "light") and
 				nodedef.liquidtype == "none") then
-			if node.name == "default:dry_dirt_with_dry_grass" then
-				minetest.set_node(pos, {name = "default:dry_dirt"})
-			else
-				minetest.set_node(pos, {name = "default:dirt"})
-			end
+			minetest.set_node(pos, {name = "default:dirt"})
 		end
 	end
 })
@@ -541,27 +541,22 @@ minetest.register_abm({
 -- Moss growth on cobble near water
 --
 
-local moss_correspondences = {
-	["default:cobble"] = "default:mossycobble",
-	["stairs:slab_cobble"] = "stairs:slab_mossycobble",
-	["stairs:stair_cobble"] = "stairs:stair_mossycobble",
-	["stairs:stair_inner_cobble"] = "stairs:stair_inner_mossycobble",
-	["stairs:stair_outer_cobble"] = "stairs:stair_outer_mossycobble",
-	["walls:cobble"] = "walls:mossycobble",
-}
 minetest.register_abm({
 	label = "Moss growth",
-	nodenames = {"default:cobble", "stairs:slab_cobble", "stairs:stair_cobble",
-		"stairs:stair_inner_cobble", "stairs:stair_outer_cobble",
-		"walls:cobble"},
+	nodenames = {"default:cobble", "stairs:slab_cobble", "stairs:stair_cobble", "walls:cobble"},
 	neighbors = {"group:water"},
 	interval = 16,
 	chance = 200,
 	catch_up = false,
 	action = function(pos, node)
-		node.name = moss_correspondences[node.name]
-		if node.name then
-			minetest.set_node(pos, node)
+		if node.name == "default:cobble" then
+			minetest.set_node(pos, {name = "default:mossycobble"})
+		elseif node.name == "stairs:slab_cobble" then
+			minetest.set_node(pos, {name = "stairs:slab_mossycobble", param2 = node.param2})
+		elseif node.name == "stairs:stair_cobble" then
+			minetest.set_node(pos, {name = "stairs:stair_mossycobble", param2 = node.param2})
+		elseif node.name == "walls:cobble" then
+			minetest.set_node(pos, {name = "walls:mossycobble", param2 = node.param2})
 		end
 	end
 })

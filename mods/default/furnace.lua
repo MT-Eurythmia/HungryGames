@@ -107,7 +107,6 @@ local function furnace_node_timer(pos, elapsed)
 
 	local inv = meta:get_inventory()
 	local srclist, fuellist
-	local dst_full = false
 
 	local cookable, cooked
 	local fuel
@@ -147,8 +146,6 @@ local function furnace_node_timer(pos, elapsed)
 						inv:set_stack("src", 1, aftercooked.items[1])
 						src_time = src_time - cooked.time
 						update = true
-					else
-						dst_full = true
 					end
 				else
 					-- Item could not be cooked: probably missing fuel
@@ -198,7 +195,7 @@ local function furnace_node_timer(pos, elapsed)
 	local item_percent = 0
 	if cookable then
 		item_percent = math.floor(src_time / cooked.time * 100)
-		if dst_full then
+		if item_percent > 100 then
 			item_state = "100% (output full)"
 		else
 			item_state = item_percent .. "%"
