@@ -4,8 +4,7 @@
 
 Mods removed from the minetest_game:
 * give_initial_stuff
-* fireflies
-* beds (replaced with hg_beds)
+* beds
 * bones, by default, are set to "drop" mode
 * creative
 * dungeon_loot
@@ -15,7 +14,6 @@ Additional mods specific to the subgame:
 * `hg_match`, manages the game itself -- player tables and so on. Registers an API.
 * `hg_user`, manages the user interaction, including the HUD and the commands.
 * `hg_map`, reinitializes the map and fills the chests. Can be also used to create maps.
-* `hg_beds`, adds beds that players can use to respawn *once* if the bed is not
 destroyed.
 * `3d_armor`, unmodified.
 * `throwing` and `throwing_arrows`, unmodified (some arrows are disabled).
