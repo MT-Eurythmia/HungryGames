@@ -15,6 +15,8 @@ hg_match.register_on_new_player(function(name)
 	local spawnpoints = hg_map.spawn.hg_nodes.spawnpoint
 	minetest.get_player_by_name(name):set_pos(vector.add(spawnpoints[math.random(#spawnpoints)],
 		vector.new(0, 1, 0)))
+	-- Stop hunger
+	hg_hunger.stop_hunger(minetest.get_player_by_name(name))
 end)
 
 minetest.register_on_joinplayer(function(player)
@@ -112,7 +114,5 @@ hg_match.register_on_end_game(function(map)
 		minetest.sound_play({name = "hg_player_match_start"}, {
 			to_player = name,
 		})
-
-		hg_hunger.stop_hunger(minetest.get_player_by_name(name))
 	end
 end)

@@ -170,7 +170,6 @@ function hg_match.remove_player(name)
 	for i, v in ipairs(hg_match.players_waiting) do
 		if v == name then
 			table.remove(hg_match.players_waiting, i)
-			hg_match.update_countdown(-hg_match.initial_countdown / 20)
 			return
 		end
 	end
