@@ -1,0 +1,12 @@
+[submodule "mods/3d_armor"]
+	path = mods/3d_armor
+	url = https://github.com/stujones11/minetest-3d_armor.git
+[submodule "mods/throwing"]
+	path = mods/throwing
+	url = https://github.com/minetest-mods/throwing.git
+[submodule "mods/throwing_arrows"]
+	path = mods/throwing_arrows
+	url = https://github.com/minetest-mods/throwing_arrows.git
+[submodule "mods/unified_inventory"]
+	path = mods/unified_inventory
+	url = https://github.com/minetest-mods/unified_inventory.git
