@@ -86,14 +86,16 @@ hg_match.register_on_new_game(function(map, players)
 		inv:set_list("craft", {})
 		-- Armor is a bit more complex
 		local _, armor_inv = armor:get_valid_player(player, "[hg_match.on_new_game]")
-		for i = 1, armor_inv:get_size("armor") do
-			local stack = armor_inv:get_stack("armor", i)
-			if stack:get_count() > 0 then
-				armor:set_inventory_stack(player, i, nil)
-				armor:run_callbacks("on_unequip", player, i, stack)
+		if armor_inv then
+			for i = 1, armor_inv:get_size("armor") do
+				local stack = armor_inv:get_stack("armor", i)
+				if stack:get_count() > 0 then
+					armor:set_inventory_stack(player, i, nil)
+					armor:run_callbacks("on_unequip", player, i, stack)
+				end
 			end
+			armor:set_player_armor(player)
 		end
-		armor:set_player_armor(player)
 
 		-- Teleport the player to a spawn point
 		local sp_i = math.random(#spawnpoints)
