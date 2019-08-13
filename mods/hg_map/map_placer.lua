@@ -99,8 +99,12 @@ local function coroutine_body()
 			nonready_maps[map.name] = map
 		end
 		for _, map in ipairs(hg_map.maps) do
-			if not map.ready and not map.in_use then
-				nonready_maps[map.name] = map
+			if not map.in_use then
+				if not map.ready then
+					nonready_maps[map.name] = map
+				else
+					nonready_maps[map.name] = nil
+				end
 			end
 		end
 
