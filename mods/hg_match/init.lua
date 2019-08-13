@@ -115,6 +115,7 @@ function hg_match.new_game()
 		map.scores[name] = {}
 	end
 
+	minetest.log("action", string.format("[hg_match] Starting a new game with %d players on map %d (%s)!", #players, map.id, map.name))
 	hg_match.call_registered_on_new_game(map, players)
 
 	return true
@@ -122,6 +123,8 @@ end
 
 function hg_match.end_game(map)
 	debug_msg("Called end_game on map " .. map.id)
+
+	minetest.log("action", string.format("[hg_match] End of game on map %d.", map.id))
 
 	map.in_use = false
 	map.ready = false

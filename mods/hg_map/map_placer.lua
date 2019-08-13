@@ -175,9 +175,7 @@ local function coroutine_body()
 				end
 				vmanip:set_light_data(light_data)
 				vmanip:write_to_map(false)
-				if part_id % 50 == 0 then
-					minetest.log("action", string.format("[hg_map] Loaded part %d of map id %d.", part_id, map.id))
-				end
+
 				part_id = part_id + 1
 				coroutine.yield()
 			end
