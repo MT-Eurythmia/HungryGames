@@ -31,8 +31,8 @@ function hg_match.update_countdown()
 	hg_match.call_registered_on_countdown_update(hg_match.initial_countdown, hg_match.wait_countdown, n)
 
 	if hg_match.wait_countdown == 0 then
-		hg_match.new_game()
 		hg_match.init_countdown()
+		hg_match.new_game()
 	end
 end
 
