@@ -50,7 +50,7 @@ hg_match.register_on_countdown_update(function(initial, current, subtracted, err
 	if error then
 		str = error
 	else
-		str = string.format("Maximum time you might have to wait before the next game starts: %d min %d s",
+		str = string.format("Next game starts in: %d min %d s",
 			math.floor(current / 60), current % 60)
 	end
 
