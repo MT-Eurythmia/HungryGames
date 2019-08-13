@@ -74,7 +74,7 @@ function hg_match.new_game()
 
 		hg_match.waiting_player_flag = true
 		hg_match.call_registered_on_countdown_update(hg_match.initial_countdown, 0, 0,
-			"The game will start as soon as another player is ready.")
+			"The game will start as soon as at least 2 players are ready.")
 		return false
 	end
 
