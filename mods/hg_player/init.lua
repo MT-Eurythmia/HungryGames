@@ -100,7 +100,7 @@ hg_match.register_on_new_game(function(map, players)
 		table.remove(spawnpoints, sp_i)
 
 		-- Announce
-		minetest.chat_send_player(name, "Welcome to map " .. map.name .. "!")
+		minetest.chat_send_player(name, string.format("Welcome to map %s made by @%s!", map.name, map.author))
 		minetest.sound_play({name = "hg_player_match_start"}, {
 			to_player = name,
 		})

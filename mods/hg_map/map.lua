@@ -81,6 +81,7 @@ function hg_map.load_map_meta(idx, name)
 		height      = tonumber(meta:get("height")),
 		margin      = tonumber(meta:get("margin")),
 		blocksize   = tonumber(meta:get("blocksize")),
+		author      = meta:get("author"),
 		max_players = #hg_nodes.spawnpoint,
 	}
 
