@@ -34,19 +34,10 @@ end)
 
 minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, tool_capabilities, dir, damage)
 	local name = player:get_player_name()
-
 	local map = hg_map.find_player_map(name)
 
 	if not map or map.build_countdown > 0 then
 		return true
-	end
-
-	-- The following is unnecessary since commit dfc819 by @rubenwardy.
-	-- It will be removed as soon as a stable version containing this commit
-	-- is released.
-	if player:get_hp() - damage <= 0 then
-		hg_match.killed_player(name, hitter:get_player_name())
-		-- This makes the call in on_dieplayer to gracefully fail.
 	end
 end)
 
