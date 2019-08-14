@@ -14,11 +14,6 @@ local function save_stats()
 end
 
 local function update_global_stats(map)
-	-- Global stats store the following info:
-	-- * Total number of kills,
-	-- * Total number of games,
-	-- * Average number of kills per player (which is less than one and represents how good the player is),
-	-- * Average rank, as a percentage.
 	local kill_number = {}
 	local kill_map = {}
 	for killer, v in pairs(map.scores) do
@@ -33,15 +28,21 @@ local function update_global_stats(map)
 			global_stats[name] = {
 				kills = 0,
 				games = 0,
-				total_opponents = 0, -- Divide kills by it to get kills_per_player (sorting key)
+				victories = 0,
 				total_rank = 0, -- Divide by games to get the average rank (between 0 and 1)
+				points = 0, -- Used for score calculation
 			}
 		end
 		local entr = global_stats[name]
 		entr.kills = entr.kills + (kill_number[name] or 0)
 		entr.games = entr.games + 1
-		entr.total_opponents = entr.total_opponents + #map.dead_players - 1
+		if i == #map.dead_players then
+			entr.victories = entr.victories + 1
+			entr.points = entr.points + 1 -- Bonus point :)
+		end
 		entr.total_rank = entr.total_rank + 1 - (i - 1) / (#map.dead_players - 1)
+		entr.points = entr.points + (kill_number[name] or 0) + (i - 1) / (#map.dead_players - 1)
+		entr.last_game = os.time()
 	end
 
 	save_stats()
@@ -53,14 +54,17 @@ local function show_stats_formspec(name)
 	-- Sort stats
 	local list = {}
 	for k, v in pairs(global_stats) do
+		local center = 7 -- seventh day is the central point of the curve
+		local steepness_factor = 1/3
+		local time_diff = steepness_factor * (os.difftime(os.time(), v.last_game) / (24 * 3600) - center)
 		table.insert(list, {
 			name = k,
-			stats = table.copy(v)
+			stats = table.copy(v),
+			rank_score_factor = 1 - 0.5 * math.exp(time_diff) / (math.exp(time_diff) + 1)
 		})
 	end
 	table.sort(list, function(a, b)
-		-- Kills-per-player is the sorting key.
-		return a.stats.kills / a.stats.total_opponents > b.stats.kills / b.stats.total_opponents
+		return a.stats.points * a.rank_score_factor > b.stats.points * b.rank_score_factor
 	end)
 
 	-- Find the invoking player rank
@@ -73,28 +77,34 @@ local function show_stats_formspec(name)
 	end
 	local own_stats = global_stats[name]
 
-	local formspec = "size[8,8]" ..
-		"tablecolumns[text,align=right;text,padding=2;text,padding=2,align=right;text,padding=2]" ..
-		"table[0,0;7.8,7;stats;Rank,Name,Total Games,Total Kills,Kills per 10 Opponents,Average Rank (norm. 10 players)"
+	local formspec = "size[14,8]" ..
+		"tablecolumns[color;text,width=4;text,width=16;text,width=4;text,width=4;text,width=4;text,width=4;text,width=4]" ..
+		"table[0,0;13.8,7;stats;#FFFFFF,Rank,Name,Total Games,Total Kills,Total Victories,Average Rank (/5),Total Score,"
 	-- Insert own entry first
 	if own_rank and own_stats then
-		formspec = formspec .. string.format("%d,%s,%d,%d,%f,%f,", own_rank, "you",
+		formspec = formspec .. string.format("#FF0000,%d,%s,%d,%d,%d,%f,%d,", own_rank, "you",
 			own_stats.games,
 			own_stats.kills,
-			own_stats.kills / own_stats.total_opponents * 10,
-			own_stats.total_rank / own_stats.games * 9 + 1)
+			own_stats.victories,
+			own_stats.total_rank / own_stats.games * 4 + 1,
+			math.ceil(own_stats.points))
 	end
 
 	-- And all other entries
 	for i, row in ipairs(list) do
-		formspec = formspec .. string.format("%d,%s,%d,%d,%f,%f,", i, row.name,
+		formspec = formspec .. string.format("#FFFFFF,%d,%s,%d,%d,%d,%f,%d,", i, row.name,
 			row.stats.games,
 			row.stats.kills,
-			row.stats.kills / row.stats.total_opponents * 10,
-			row.stats.total_rank / row.stats.games * 9 + 1)
+			row.stats.victories,
+			row.stats.total_rank / row.stats.games * 4 + 1,
+			math.ceil(row.stats.points))
+		if i > 50 then
+			-- Do not show more than 50 players
+			break
+		end
 	end
 	formspec = string.sub(formspec, 1, -1) .. "]" ..
-		"button_exit[3,7.3;2,1;exit;Close]"
+		"button_exit[6,7.3;2,1;exit;Close]"
 
 	minetest.show_formspec(name, "stats", formspec)
 end
