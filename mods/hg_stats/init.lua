@@ -64,7 +64,7 @@ local function show_stats_formspec(name)
 	end)
 
 	-- Find the invoking player rank
-	local own_rank = 0
+	local own_rank
 	for i, v in ipairs(list) do
 		if v.name == name then
 			own_rank = i
@@ -77,11 +77,13 @@ local function show_stats_formspec(name)
 		"tablecolumns[text,align=right;text,padding=2;text,padding=2,align=right;text,padding=2]" ..
 		"table[0,0;7.8,7;stats;Rank,Name,Total Games,Total Kills,Kills per 10 Opponents,Average Rank (norm. 10 players)"
 	-- Insert own entry first
-	formspec = formspec .. string.format("%d,%s,%d,%d,%f,%f,", own_rank, "you",
-		own_stats.games,
-		own_stats.kills,
-		own_stats.kills / own_stats.total_opponents * 10,
-		own_stats.total_rank / own_stats.games * 9 + 1)
+	if own_rank and own_stats then
+		formspec = formspec .. string.format("%d,%s,%d,%d,%f,%f,", own_rank, "you",
+			own_stats.games,
+			own_stats.kills,
+			own_stats.kills / own_stats.total_opponents * 10,
+			own_stats.total_rank / own_stats.games * 9 + 1)
+	end
 
 	-- And all other entries
 	for i, row in ipairs(list) do
