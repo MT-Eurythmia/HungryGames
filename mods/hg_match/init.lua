@@ -119,7 +119,7 @@ function hg_match.new_player(name)
 	if hg_match.waiting_player_flag then
 		debug_msg("Starting a game because the waiting_player_flag is set")
 		hg_match.waiting_player_flag = false
-		minetest.after(1, hg_match.new_game)
+		minetest.after(2, hg_match.new_game)
 		return
 	end
 
