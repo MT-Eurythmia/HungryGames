@@ -10,7 +10,7 @@ function hg_match.init_countdown()
 	hg_match.initial_countdown = v
 	hg_match.wait_countdown = v
 
-	hg_match.call_registered_on_countdown_update(v, v, 0)
+	hg_match.call_registered_on_countdown_update(v, v)
 end
 
 function hg_match.update_countdown()
@@ -28,7 +28,7 @@ function hg_match.update_countdown()
 
 	hg_match.wait_countdown = hg_match.wait_countdown - 1
 
-	hg_match.call_registered_on_countdown_update(hg_match.initial_countdown, hg_match.wait_countdown, n)
+	hg_match.call_registered_on_countdown_update(hg_match.initial_countdown, hg_match.wait_countdown)
 
 	if hg_match.wait_countdown == 0 then
 		hg_match.init_countdown()

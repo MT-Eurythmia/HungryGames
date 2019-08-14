@@ -45,7 +45,7 @@ minetest.register_on_leaveplayer(function(player)
 	hg_match.remove_player(player:get_player_name())
 end)
 
-hg_match.register_on_countdown_update(function(initial, current, subtracted, error)
+hg_match.register_on_countdown_update(function(initial, current, error)
 	local str = ""
 	if error then
 		str = error

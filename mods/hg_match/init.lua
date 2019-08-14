@@ -55,7 +55,7 @@ function hg_match.new_game()
 		debug_msg("Not enough players")
 
 		hg_match.waiting_player_flag = true
-		hg_match.call_registered_on_countdown_update(hg_match.initial_countdown, 0, 0,
+		hg_match.call_registered_on_countdown_update(hg_match.initial_countdown, 0,
 			"The game will start as soon as at least 2 players are ready.")
 		return false
 	end
@@ -65,7 +65,7 @@ function hg_match.new_game()
 	if not map then
 		debug_msg("No map is ready")
 		hg_match.waiting_map_flag = true
-		hg_match.call_registered_on_countdown_update(hg_match.initial_countdown, 0, 0,
+		hg_match.call_registered_on_countdown_update(hg_match.initial_countdown, 0,
 			"The game will start as soon as a map is ready.")
 		return false
 	end
