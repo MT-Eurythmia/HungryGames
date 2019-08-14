@@ -32,24 +32,3 @@ local function show_ranking_formspec(map)
 end
 
 hg_match.register_on_end_game(show_ranking_formspec)
-
---[[
-function hg_player.debug_show_ranking_formspec()
-	local players = minetest.get_connected_players()
-	local map = {
-		dead_players = {},
-		scores = {},
-	}
-
-	for i, player in ipairs(players) do
-		local name = player:get_player_name()
-		table.insert(map.dead_players, name)
-		map.scores[name] = {}
-		if i == 2 then
-			map.scores[name][players[1]:get_player_name()] = true
-		end
-	end
-
-	show_ranking_formspec(map)
-end
-]]

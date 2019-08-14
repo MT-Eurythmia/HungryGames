@@ -47,24 +47,6 @@ function hg_match.is_waiting(name)
 	return false
 end
 
---[[
-local function hg_match_continue_new_game(map)
-	local players = hg_match.players_waiting
-	hg_match.players_waiting = {}
-
-	map.in_use = true
-	map.players = players
-	map.dead_players = {}
-	map.build_countdown = 5*60
-	map.scores = {}
-	for _, name in ipairs(players) do
-		map.scores[name] = {}
-	end
-
-	hg_match.call_registered_on_new_game(map, players)
-end
-]]
-
 function hg_match.new_game()
 	debug_msg("Called new_game")
 
@@ -78,22 +60,7 @@ function hg_match.new_game()
 		return false
 	end
 
-	-- Choose a map
-	--[[
-	local map = nil
-
-	do
-		local available_maps = {}
-		for k, v in pairs(hg_map.available_maps) do
-			if v.max_players >= #hg_match.players_waiting then
-				table.insert(available_maps, v)
-			end
-		end
-
-		map = available_maps[math.random(#available_maps)]
-	end
-	]]
-
+	-- Get a map
 	local map = hg_map.get_map(#hg_match.players_waiting)
 	if not map then
 		debug_msg("No map is ready")
