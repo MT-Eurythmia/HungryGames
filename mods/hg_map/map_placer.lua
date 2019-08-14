@@ -103,11 +103,14 @@ local function coroutine_body()
 			-- The whole schematic is now loaded.
 			-- Finalization
 
-			-- Clear objects (563 is the maximum distance between the center
-			-- and a corner of the map, 50-nodes margin included)
+			-- Clear objects
 			minetest.after(0.5, function()
-				local center = vector.add(map.offset, vector.round(vector.new(map.width / 2, map.height / 2, map.length / 2)))
-				local objects = minetest.get_objects_inside_radius(center, 563)
+				local center = vector.add(map.offset,
+					vector.round(vector.new(map.width / 2 + map.margin, map.height / 2, map.length / 2 + map.margin)))
+				local radius = math.ceil(math.sqrt(math.pow(map.width / 2 + map.margin, 2)
+						+ math.pow(map.height / 2, 2)
+						+ math.pow(map.length / 2 + map.margin, 2)))
+				local objects = minetest.get_objects_inside_radius(center, radius)
 				for _, object in ipairs(objects) do
 					if not object:is_player() then
 						object:remove()
