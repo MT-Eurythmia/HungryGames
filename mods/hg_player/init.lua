@@ -6,17 +6,44 @@ dofile(minetest.get_modpath("hg_player") .. "/hud.lua")
 dofile(minetest.get_modpath("hg_player") .. "/pvp.lua")
 dofile(minetest.get_modpath("hg_player") .. "/ranking_formspec.lua")
 
+local function clear_inventory(player)
+	-- Inventory
+	local inv = player:get_inventory()
+	inv:set_list("main", {})
+	inv:set_list("craft", {})
+
+	-- Armor
+	local _, armor_inv = armor:get_valid_player(player, "[hg_match.on_new_game]")
+	if armor_inv then
+		for i = 1, armor_inv:get_size("armor") do
+			local stack = armor_inv:get_stack("armor", i)
+			if stack:get_count() > 0 then
+				armor:set_inventory_stack(player, i, nil)
+				armor:run_callbacks("on_unequip", player, i, stack)
+			end
+		end
+		armor:set_player_armor(player)
+	end
+end
+
 hg_match.register_on_new_player(function(name)
 	-- Revoke interact
-	minetest.set_player_privs(name, {
-		shout = true,
-	})
+	local privs = minetest.get_player_privs(name)
+	privs.interact = nil
+	privs.shout = true
+	minetest.set_player_privs(name, privs)
+
 	-- Set pos
+	local player = minetest.get_player_by_name(name)
 	local spawnpoints = hg_map.spawn.hg_nodes.spawnpoint
-	minetest.get_player_by_name(name):set_pos(vector.add(spawnpoints[math.random(#spawnpoints)],
+	player:set_pos(vector.add(spawnpoints[math.random(#spawnpoints)],
 		vector.new(0, 1, 0)))
+
 	-- Stop hunger
-	hg_hunger.stop_hunger(minetest.get_player_by_name(name))
+	hg_hunger.stop_hunger(player)
+
+	-- Clear inventory
+	clear_inventory(player)
 end)
 
 minetest.register_on_joinplayer(function(player)
@@ -24,16 +51,7 @@ minetest.register_on_joinplayer(function(player)
 
 	minetest.chat_send_player(name, "Hungry Games Redo is currently extremely unstable. The game may crash at any time. Please report any bug to the server administrator.\nThank you for playing Hungry Games!")
 
-	minetest.set_player_privs(name, {
-		shout = true,
-	})
-
-	local spawnpoints = hg_map.spawn.hg_nodes.spawnpoint
-	player:set_pos(vector.add(spawnpoints[math.random(#spawnpoints)],
-		vector.new(0, 1, 0)))
-
-	hg_hunger.stop_hunger(player)
-	hg_match.new_player(player:get_player_name())
+	hg_match.new_player(name)
 end)
 
 minetest.register_on_dieplayer(function(player)
@@ -81,21 +99,7 @@ hg_match.register_on_new_game(function(map, players)
 		hg_hunger.start_hunger(player)
 
 		-- Clear inventory
-		local inv = player:get_inventory()
-		inv:set_list("main", {})
-		inv:set_list("craft", {})
-		-- Armor is a bit more complex
-		local _, armor_inv = armor:get_valid_player(player, "[hg_match.on_new_game]")
-		if armor_inv then
-			for i = 1, armor_inv:get_size("armor") do
-				local stack = armor_inv:get_stack("armor", i)
-				if stack:get_count() > 0 then
-					armor:set_inventory_stack(player, i, nil)
-					armor:run_callbacks("on_unequip", player, i, stack)
-				end
-			end
-			armor:set_player_armor(player)
-		end
+		clear_inventory(player)
 
 		-- Teleport the player to a spawn point
 		local sp_i = math.random(#spawnpoints)
