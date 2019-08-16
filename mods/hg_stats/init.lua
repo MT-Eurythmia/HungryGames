@@ -82,7 +82,7 @@ local function show_stats_formspec(name)
 		"table[0,0;13.8,7;stats;#FFFFFF,Rank,Name,Total Games,Total Kills,Total Victories,Average Rank (/5),Total Score,"
 	-- Insert own entry first
 	if own_rank and own_stats then
-		formspec = formspec .. string.format("#FF0000,%d,%s,%d,%d,%d,%f,%d,", own_rank, "you",
+		formspec = formspec .. string.format("#FF0000,%d,%s,%d,%d,%d,%.1f,%d,", own_rank, "you",
 			own_stats.games,
 			own_stats.kills,
 			own_stats.victories,
@@ -92,7 +92,7 @@ local function show_stats_formspec(name)
 
 	-- And all other entries
 	for i, row in ipairs(list) do
-		formspec = formspec .. string.format("#FFFFFF,%d,%s,%d,%d,%d,%f,%d,", i, row.name,
+		formspec = formspec .. string.format("#FFFFFF,%d,%s,%d,%d,%d,%.1f,%d,", i, row.name,
 			row.stats.games,
 			row.stats.kills,
 			row.stats.victories,
