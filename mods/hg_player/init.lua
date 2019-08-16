@@ -44,6 +44,11 @@ hg_match.register_on_new_player(function(name)
 
 	-- Clear inventory
 	clear_inventory(player)
+
+	-- Set clouds height
+	player:set_clouds({
+		height = hg_map.spawn.maxp.y
+	})
 end)
 
 minetest.register_on_joinplayer(function(player)
@@ -106,6 +111,11 @@ hg_match.register_on_new_game(function(map, players)
 		player:set_pos(vector.add(spawnpoints[sp_i],
 			vector.new(0, 1, 0)))
 		table.remove(spawnpoints, sp_i)
+
+		-- Set clouds height
+		player:set_clouds({
+			height = map.maxp.y
+		})
 
 		-- Announce
 		minetest.chat_send_player(name, string.format("Welcome to map %s made by @%s!", map.name, map.author))
