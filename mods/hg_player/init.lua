@@ -2,6 +2,8 @@ if minetest.is_singleplayer() then
 	return
 end
 
+hg_player = {}
+
 dofile(minetest.get_modpath("hg_player") .. "/hud.lua")
 dofile(minetest.get_modpath("hg_player") .. "/pvp.lua")
 dofile(minetest.get_modpath("hg_player") .. "/ranking_formspec.lua")
@@ -26,7 +28,7 @@ local function clear_inventory(player)
 	end
 end
 
-hg_match.register_on_new_player(function(name)
+function hg_player.new_player(name)
 	-- Revoke interact
 	local privs = minetest.get_player_privs(name)
 	privs.interact = nil
@@ -49,7 +51,7 @@ hg_match.register_on_new_player(function(name)
 	player:set_clouds({
 		height = hg_map.spawn.maxp.y
 	})
-end)
+end
 
 minetest.register_on_joinplayer(function(player)
 	local name = player:get_player_name()
@@ -57,6 +59,10 @@ minetest.register_on_joinplayer(function(player)
 	minetest.chat_send_player(name, "Hungry Games Redo is currently extremely unstable. The game may crash at any time. Please report any bug to the server administrator.\nThank you for playing Hungry Games!")
 
 	hg_match.new_player(name)
+end)
+
+minetest.register_on_leaveplayer(function(player)
+	hg_match.remove_player(player:get_player_name())
 end)
 
 minetest.register_on_dieplayer(function(player)
@@ -74,6 +80,7 @@ end)
 
 minetest.register_on_respawnplayer(function(player)
 	local name = player:get_player_name()
+
 	local formspec = hg_player.respawn_ranking_formspec[name]
 	if formspec then
 		minetest.after(1, function()
@@ -87,9 +94,9 @@ minetest.register_on_respawnplayer(function(player)
 	return true
 end)
 
-hg_match.register_on_new_game(function(map, players)
+function hg_player.new_game(map)
 	local spawnpoints = table.copy(map.hg_nodes.spawnpoint)
-	for _, name in ipairs(players) do
+	for _, name in ipairs(map.players) do
 		local player = minetest.get_player_by_name(name)
 
 		-- Grant interact
@@ -123,12 +130,13 @@ hg_match.register_on_new_game(function(map, players)
 			to_player = name,
 		})
 	end
-end)
+end
 
-hg_match.register_on_end_game(function(map)
+function hg_player.end_game(map)
 	for _, name in ipairs(map.dead_players) do
 		minetest.sound_play({name = "hg_player_match_start"}, {
 			to_player = name,
 		})
 	end
-end)
+	hg_player.show_ranking_formspec(map)
+end

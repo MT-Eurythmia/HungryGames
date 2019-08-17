@@ -1,8 +1,5 @@
 -- Waiting HUD
-
-hg_player = {
-	text_huds = {},
-}
+hg_player.text_huds = {}
 
 function hg_player.update_text_hud(player, text)
 	local name = player:get_player_name()
@@ -31,6 +28,12 @@ function hg_player.update_text_hud(player, text)
 	end
 end
 
+function hg_player.update_text_hud_all(names, text)
+	for _, name in ipairs(names) do
+		hg_player.update_text_hud(minetest.get_player_by_name(name), text)
+	end
+end
+
 function hg_player.remove_text_hud(player)
 	local name = player:get_player_name()
 	local id = hg_player.text_huds[name]
@@ -42,20 +45,4 @@ end
 
 minetest.register_on_leaveplayer(function(player)
 	hg_player.remove_text_hud(player)
-	hg_match.remove_player(player:get_player_name())
-end)
-
-hg_match.register_on_countdown_update(function(initial, current, error)
-	local str = ""
-	if error then
-		str = error
-	else
-		str = string.format("Next game starts in: %d min %d s",
-			math.floor(current / 60), current % 60)
-	end
-
-	for _, name in ipairs(hg_match.players_waiting) do
-		local player = minetest.get_player_by_name(name)
-		hg_player.update_text_hud(player, str)
-	end
 end)

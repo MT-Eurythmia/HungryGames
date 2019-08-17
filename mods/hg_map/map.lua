@@ -130,7 +130,7 @@ end
 function hg_map.get_map(spawnpoints_min)
 	local selectable_maps = {}
 	for _, map in ipairs(hg_map.maps) do
-		if not map.in_use and map.ready and map.max_players >= spawnpoints_min then
+		if map.ready and map.max_players >= spawnpoints_min then
 			table.insert(selectable_maps, map)
 		end
 	end

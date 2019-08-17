@@ -5,8 +5,6 @@ end
 hg_match = {
 	players_waiting = {},
 	max_players = 0,
-	waiting_player_flag = false,
-	waiting_map_flag = false,
 }
 
 function debug_msg(msg)
@@ -15,7 +13,7 @@ function debug_msg(msg)
 	end
 end
 
-for _, v in ipairs({"new_game", "end_game", "countdown_update", "new_player", "killed_player"}) do
+for _, v in ipairs({"new_game", "end_game", "new_player", "killed_player"}) do
 	hg_match["registered_on_" .. v] = {}
 	hg_match["register_on_" .. v] = function(f)
 		assert(type(f) == "function")
@@ -53,10 +51,6 @@ function hg_match.new_game()
 	-- Check if there are enough players
 	if #hg_match.players_waiting < 2 then
 		debug_msg("Not enough players")
-
-		hg_match.waiting_player_flag = true
-		hg_match.call_registered_on_countdown_update(hg_match.initial_countdown, 0,
-			"The game will start as soon as at least 2 players are ready.")
 		return false
 	end
 
@@ -64,26 +58,25 @@ function hg_match.new_game()
 	local map = hg_map.get_map(#hg_match.players_waiting)
 	if not map then
 		debug_msg("No map is ready")
-		hg_match.waiting_map_flag = true
-		hg_match.call_registered_on_countdown_update(hg_match.initial_countdown, 0,
-			"The game will start as soon as a map is ready.")
 		return false
 	end
 
 	local players = table.copy(hg_match.players_waiting)
-	hg_match.players_waiting = {}
 
 	map.in_use = true
-	map.players = players
+	map.ready = false
 	map.dead_players = {}
 	map.build_countdown = 5*60
 	map.scores = {}
 	for _, name in ipairs(players) do
+		table.remove(hg_match.players_waiting, 1)
+		table.insert(map.players, name)
 		map.scores[name] = {}
 	end
 
-	minetest.log("action", string.format("[hg_match] Starting a new game with %d players on map %d (%s)!", #players, map.id, map.name))
-	hg_match.call_registered_on_new_game(map, players)
+	minetest.log("action", string.format("[hg_match] Starting a new game with %d players on map %d (%s)!", #map.players, map.id, map.name))
+	hg_player.new_game(map)
+	hg_match.call_registered_on_new_game(map, map.players)
 
 	return true
 end
@@ -94,7 +87,6 @@ function hg_match.end_game(map)
 	minetest.log("action", string.format("[hg_match] End of game on map %d.", map.id))
 
 	map.in_use = false
-	map.ready = false
 	for i, name in ipairs(map.players) do
 		table.remove(map.players, i)
 		table.insert(map.dead_players, name)
@@ -102,12 +94,16 @@ function hg_match.end_game(map)
 		hg_match.new_player(name)
 	end
 
+	hg_match.last_game_time = os.time()
+
+	hg_player.end_game(map)
 	hg_match.call_registered_on_end_game(map)
 end
 
 function hg_match.new_player(name)
 	debug_msg("Called new_player with params " .. name)
 
+	hg_player.new_player(name)
 	hg_match.call_registered_on_new_player(name)
 
 	if hg_match.is_waiting(name) then
@@ -115,19 +111,6 @@ function hg_match.new_player(name)
 	end
 
 	table.insert(hg_match.players_waiting, name)
-
-	if hg_match.waiting_player_flag then
-		debug_msg("Starting a game because the waiting_player_flag is set")
-		hg_match.waiting_player_flag = false
-		minetest.after(2, hg_match.new_game)
-		return
-	end
-
-	if #hg_match.players_waiting >= hg_match.max_players then
-		debug_msg("Starting a game because no map is able to handle more players")
-		hg_match.new_game()
-		return
-	end
 end
 
 function hg_match.remove_player(name)
@@ -173,4 +156,4 @@ function hg_match.killed_player(name, killer_name)
 	end
 end
 
-dofile(minetest.get_modpath("hg_match") .. "/countdown.lua")
+dofile(minetest.get_modpath("hg_match") .. "/start.lua")

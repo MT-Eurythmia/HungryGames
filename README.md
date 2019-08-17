@@ -31,9 +31,3 @@ is the maximum between 3 and the number of players out of the number of maps
 are 10 players waiting). The maximum waiting time is 5 minutes, if there are not
 enough players (still more than 3) but 5 minutes were waited, a new game
 will start anyway. -->
-
-The game computes a metric named the last-20 minutes average time to get 30
-players. The countdown is initially set to this value (with a maximum of 5
-minutes, which will be typically used unless there are more than 6 players a
-minute). Every time a new players connects, the countdown is decreased by
-5% of its initial value, unless the countdown is below 20% of its initial value.

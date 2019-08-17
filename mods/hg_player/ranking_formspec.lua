@@ -1,6 +1,6 @@
 hg_player.respawn_ranking_formspec = {}
 
-local function show_ranking_formspec(map)
+function hg_player.show_ranking_formspec(map)
 	local kill_map = {}
 	local kill_number = {}
 	for killer, v in pairs(map.scores) do
@@ -30,5 +30,3 @@ local function show_ranking_formspec(map)
 
 	hg_player.respawn_ranking_formspec[map.dead_players[#map.dead_players-1]] = formspec
 end
-
-hg_match.register_on_end_game(show_ranking_formspec)

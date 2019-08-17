@@ -156,10 +156,6 @@ local function coroutine_body()
 			minetest.log("action", string.format("[hg_map] Finished loading of map id %d.", map.id))
 
 			map.ready = true
-			if hg_match.waiting_map_flag then
-				hg_match.waiting_map_flag = false
-				hg_match.new_game()
-			end
 		else
 			-- There is no need for a map.
 			coroutine.yield()
