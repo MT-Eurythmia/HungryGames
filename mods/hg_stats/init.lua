@@ -1,3 +1,7 @@
+if minetest.is_singleplayer() then
+	return
+end
+
 local storage = minetest.get_mod_storage()
 
 local global_stats = {}
