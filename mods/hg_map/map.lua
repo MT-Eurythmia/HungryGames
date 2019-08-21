@@ -114,7 +114,8 @@ do
 			table.remove(hg_map.available_maps)
 		end
 	end
-	print(dump(hg_map.available_maps))
+
+	assert(hg_map.spawn, "Please add a spawn map.")
 end
 
 function hg_map.find_player_map(name)
@@ -152,23 +153,16 @@ function hg_map.update_map_offset(map)
 	end
 end
 
-function hg_map.place_spawn()
-	assert(hg_map.spawn, "Please add a spawn map.")
-
-	hg_map.spawn.offset = vector.new(-hg_map.spawn.width/2, 24000, -hg_map.spawn.length/2)
-	hg_map.update_map_offset(hg_map.spawn)
-
-	hg_map.emerge_with_callbacks(nil, hg_map.spawn.minp, hg_map.spawn.maxp, function()
-		local res = minetest.place_schematic(hg_map.spawn.minp, hg_map.spawn.path .. ".mts", "0")
-	end, nil)
-end
-
-minetest.after(0, hg_map.place_spawn)
-
 function hg_map.chat_send_map(map, message)
 	for _, name in ipairs(map.players) do
 		minetest.chat_send_player(name, message)
 	end
 end
+
+minetest.register_on_prejoinplayer(function(name, ip)
+	if not hg_map.spawn.ready then
+		return "Sorry, the map is not ready yet. Try again in a few minutes!"
+	end
+end)
 
 dofile(minetest.get_modpath("hg_map") .. "/map_placer.lua")

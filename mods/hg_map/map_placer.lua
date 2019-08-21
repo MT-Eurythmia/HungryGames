@@ -4,25 +4,95 @@
 -- Here we need maximum effiency to slow down the server as little as possible.
 -- Schematics are placed block by block (16x16x16 nodes) every 0.3 second.
 
+local function emerge(minp, maxp)
+	local emerging = true
+	hg_map.emerge_with_callbacks(nil, minp, maxp, function()
+		emerging = false
+	end, nil)
+
+	while emerging do
+		coroutine.yield()
+	end
+end
+
+local function finalize_map(map)
+	-- Clear objects
+	minetest.after(0.5, function()
+		local center = vector.add(map.offset,
+			vector.round(vector.new(map.width / 2 + map.margin, map.height / 2, map.length / 2 + map.margin)))
+		local radius = math.ceil(math.sqrt(math.pow(map.width / 2 + map.margin, 2)
+				+ math.pow(map.height / 2, 2)
+				+ math.pow(map.length / 2 + map.margin, 2)))
+		local objects = minetest.get_objects_inside_radius(center, radius)
+		for _, object in ipairs(objects) do
+			if not object:is_player() then
+				object:remove()
+			end
+		end
+	end)
+
+	-- Fill chests
+	-- Split the global chests stuff at random intervals and dispatch
+	-- it in the chests.
+	local chests = map.hg_nodes.chest
+
+	local splitted_stuff = {}
+	for k, v in pairs(hg_map.chests_stuff) do
+		splitted_stuff[k] = {}
+		local splitpoints = {}
+		for i = 1, #chests-1 do
+			table.insert(splitpoints, math.random(v))
+		end
+		table.sort(splitpoints)
+		splitted_stuff[k][1] = splitpoints[1] or 0 -- the or avoids crashing if there is only one chest
+		for i = 2, #chests-1 do
+			splitted_stuff[k][i] = splitpoints[i] - splitpoints[i-1]
+		end
+		splitted_stuff[k][#chests] = v - (splitpoints[#chests-1] or 0)
+	end
+
+	for i, pos in ipairs(chests) do
+		local meta = minetest.get_meta(pos)
+		local inv = meta:get_inventory()
+		inv:set_size("main", 8*4)
+		inv:set_list("main", {})
+		for name, quantity in pairs(splitted_stuff) do
+			local stack = ItemStack(name)
+			stack:set_count(quantity[i])
+			inv:add_item("main", stack)
+		end
+	end
+end
+
 local function coroutine_body()
 	while true do
 		-- Let's select a map to prepare.
 		local map
-		local nonready_maps = {}
-		for _, map in ipairs(hg_map.available_maps) do
-			nonready_maps[map.name] = map
-		end
-		for _, map in ipairs(hg_map.maps) do
-			if not map.in_use then
-				if not map.ready then
-					nonready_maps[map.name] = map
-				else
-					nonready_maps[map.name] = nil
+		if not hg_map.spawn.ready then
+			-- If we don't have a spawn yet, start with it
+			map = hg_map.spawn
+			map.id = -1
+			map.offset = vector.new(-hg_map.spawn.width/2, 24000, -hg_map.spawn.length/2)
+			hg_map.update_map_offset(map)
+			emerge(map.minp, map.maxp)
+		else
+			local nonready_maps = {}
+			for _, map in ipairs(hg_map.available_maps) do
+				nonready_maps[map.name] = map
+			end
+			for _, map in ipairs(hg_map.maps) do
+				if not map.in_use then
+					if not map.ready then
+						nonready_maps[map.name] = map
+					else
+						nonready_maps[map.name] = nil
+					end
 				end
 			end
+			local _, selected_map = next(nonready_maps)
+			map = selected_map
 		end
 
-		local _, map = next(nonready_maps)
 		if map then
 			if not map.offset then
 				-- Compute the offset
@@ -49,15 +119,7 @@ local function coroutine_body()
 				new_map.ready = false
 				table.insert(hg_map.maps, new_map)
 
-				-- Emerge
-				local emerging = true
-				hg_map.emerge_with_callbacks(nil, new_map.minp, new_map.maxp, function()
-					emerging = false
-				end, nil)
-
-				while emerging do
-					coroutine.yield()
-				end
+				emerge(new_map.minp, new_map.maxp)
 
 				map = new_map
 			end
@@ -103,55 +165,9 @@ local function coroutine_body()
 			-- The whole schematic is now loaded.
 			-- Finalization
 
-			-- Clear objects
-			minetest.after(0.5, function()
-				local center = vector.add(map.offset,
-					vector.round(vector.new(map.width / 2 + map.margin, map.height / 2, map.length / 2 + map.margin)))
-				local radius = math.ceil(math.sqrt(math.pow(map.width / 2 + map.margin, 2)
-						+ math.pow(map.height / 2, 2)
-						+ math.pow(map.length / 2 + map.margin, 2)))
-				local objects = minetest.get_objects_inside_radius(center, radius)
-				for _, object in ipairs(objects) do
-					if not object:is_player() then
-						object:remove()
-					end
-				end
-			end)
-
-			-- Fill chests
-			-- Split the global chests stuff at random intervals and dispatch
-			-- it in the chests.
-			local chests = map.hg_nodes.chest
-
-			local splitted_stuff = {}
-			for k, v in pairs(hg_map.chests_stuff) do
-				splitted_stuff[k] = {}
-				local splitpoints = {}
-				for i = 1, #chests-1 do
-					table.insert(splitpoints, math.random(v))
-				end
-				table.sort(splitpoints)
-				splitted_stuff[k][1] = splitpoints[1] or 0 -- the or avoids crashing if there is only one chest
-				for i = 2, #chests-1 do
-					splitted_stuff[k][i] = splitpoints[i] - splitpoints[i-1]
-				end
-				splitted_stuff[k][#chests] = v - (splitpoints[#chests-1] or 0)
+			if map.name ~= "spawn" then
+				finalize_map(map)
 			end
-
-			for i, pos in ipairs(chests) do
-				local meta = minetest.get_meta(pos)
-				local inv = meta:get_inventory()
-				inv:set_size("main", 8*4)
-				inv:set_list("main", {})
-				for name, quantity in pairs(splitted_stuff) do
-					local stack = ItemStack(name)
-					stack:set_count(quantity[i])
-					inv:add_item("main", stack)
-				end
-			end
-
-			-- Fix light
-			--print(minetest.fix_light(map.minp, map.maxp))
 
 			minetest.log("action", string.format("[hg_map] Finished loading of map id %d.", map.id))
 
