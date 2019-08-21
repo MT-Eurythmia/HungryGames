@@ -72,7 +72,7 @@ local function coroutine_body()
 			-- If we don't have a spawn yet, start with it
 			map = hg_map.spawn
 			map.id = -1
-			map.offset = vector.new(-hg_map.spawn.width/2, 24000, -hg_map.spawn.length/2)
+			map.offset = vector.new(24000, 24000, 24000)
 			hg_map.update_map_offset(map)
 			emerge(map.minp, map.maxp)
 		else
