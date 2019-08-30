@@ -50,6 +50,25 @@ local function get_setting(name)
 	end
 end
 
+local last_punch_times = {}
+
+local function arrow_punch(object, hitter, caps)
+	local time_from_last_punch = caps.full_punch_interval or 1
+	local hitter_name = hitter:get_player_name()
+	local player_name = object:get_player_name()
+	if last_punch_times[hitter_name] then
+		if last_punch_times[hitter_name][player_name] then
+			time_from_last_punch = os.difftime(os.time(), last_punch_times[hitter_name][player_name])
+		end
+	else
+		last_punch_times[hitter_name] = {}
+	end
+	if time_from_last_punch >= (caps.full_punch_interval or 1) then
+		last_punch_times[hitter_name][player_name] = os.time()
+	end
+	object:punch(hitter, time_from_last_punch, caps)
+end
+
 if get_setting("arrow") then
 	throwing.register_arrow("throwing:arrow", {
 		itemcraft = "default:steel_ingot",
@@ -61,8 +80,8 @@ if get_setting("arrow") then
 		on_hit_sound = "throwing_arrow",
 		on_hit = function(self, pos, _, node, object, hitter)
 			if object then
-				object:punch(hitter, 1, {
-					full_punch_interval = 1,
+				arrow_punch(object, hitter, {
+					full_punch_interval = 0.7,
 					max_drop_level = 1,
 					damage_groups = {fleshy = 3}
 				})
@@ -85,8 +104,8 @@ if get_setting("golden_arrow") then
 		allow_protected = true,
 		on_hit_sound = "throwing_arrow",
 		on_hit = function(self, pos, _, _, object, hitter)
-			object:punch(hitter, 1, {
-				full_punch_interval = 1,
+			arrow_punch(object, hitter, {
+				full_punch_interval = 0.6,
 				max_drop_level = 1,
 				damage_groups = {fleshy = 5}
 			})
@@ -104,8 +123,8 @@ if get_setting("diamond_arrow") then
 		allow_protected = true,
 		on_hit_sound = "throwing_arrow",
 		on_hit = function(self, pos, _, _, object, hitter)
-			object:punch(hitter, 1, {
-				full_punch_interval = 1,
+			arrow_punch(object, hitter, {
+				full_punch_interval = 0.5,
 				max_drop_level = 1,
 				damage_groups = {fleshy = 7}
 			})
