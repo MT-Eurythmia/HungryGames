@@ -8,6 +8,7 @@ The settings are the following:
 ```
 throwing.enable_arrow = true
 throwing.enable_golden_arrow = true
+throwing.enable_diamond_arrow = true
 throwing.enable_fire_arrow = true
 throwing.enable_teleport_arrow = true
 throwing.enable_dig_arrow = true

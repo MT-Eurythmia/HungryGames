@@ -10,12 +10,7 @@ throwing.modname = minetest.get_current_modname()
 
 --------- Arrows functions ---------
 function throwing.is_arrow(itemstack)
-	for _, arrow in ipairs(throwing.arrows) do
-		if (type(itemstack) == "string" and itemstack or itemstack:get_name()) == arrow then
-			return true
-		end
-	end
-	return false
+	return throwing.arrows[ItemStack(itemstack):get_name()]
 end
 
 function throwing.spawn_arrow_entity(pos, arrow, player)
@@ -165,7 +160,7 @@ local function arrow_step(self, dtime)
 		self.object:remove()
 		logging("reached ignore. Removing.")
 		return
-	elseif node.name ~= "air" then
+	elseif (minetest.registered_items[node.name] or {}).drawtype ~= "airlike" then
 		if self.target ~= throwing.target_object then -- throwing.target_both, nil, throwing.target_node, or any invalid value
 			if hit(pos, node, nil) ~= false then
 				self.object:remove()
@@ -200,6 +195,10 @@ local function arrow_step(self, dtime)
 		end
 	end
 
+	-- Support for shining items using wielded light
+	if minetest.global_exists("wielded_light") and self.object then
+		wielded_light.update_light_by_item(self.item, self.object:get_pos())
+	end
 
 	self.last_pos = pos -- Used by the build arrow
 end
@@ -222,7 +221,7 @@ on_throw(pos, hitter)
 Unlike on_hit, it is optional.
 ]]
 function throwing.register_arrow(name, def)
-	table.insert(throwing.arrows, name)
+	throwing.arrows[name] = true
 
 	local registration_name = name
 	if name:sub(1,9) == "throwing:" then

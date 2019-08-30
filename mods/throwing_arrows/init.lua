@@ -63,6 +63,7 @@ if get_setting("arrow") then
 			if object then
 				object:punch(hitter, 1, {
 					full_punch_interval = 1,
+					max_drop_level = 1,
 					damage_groups = {fleshy = 3}
 				})
 			elseif node then
@@ -86,7 +87,27 @@ if get_setting("golden_arrow") then
 		on_hit = function(self, pos, _, _, object, hitter)
 			object:punch(hitter, 1, {
 				full_punch_interval = 1,
+				max_drop_level = 1,
 				damage_groups = {fleshy = 5}
+			})
+		end
+	})
+end
+
+if get_setting("diamond_arrow") then
+	throwing.register_arrow("throwing:arrow_diamond", {
+		itemcraft = "default:diamond",
+		craft_quantity = 4,
+		description = "Diamond Arrow",
+		tiles = {"throwing_arrow_diamond.png", "throwing_arrow_diamond.png", "throwing_arrow_diamond_back.png", "throwing_arrow_diamond_front.png", "throwing_arrow_diamond_2.png", "throwing_arrow_diamond.png"},
+		target = throwing.target_object,
+		allow_protected = true,
+		on_hit_sound = "throwing_arrow",
+		on_hit = function(self, pos, _, _, object, hitter)
+			object:punch(hitter, 1, {
+				full_punch_interval = 1,
+				max_drop_level = 1,
+				damage_groups = {fleshy = 7}
 			})
 		end
 	})
@@ -119,7 +140,7 @@ end
 
 if get_setting("teleport_arrow") then
 	throwing.register_arrow("throwing:arrow_teleport", {
-		itemcraft = "default:diamond",
+		itemcraft = "default:mese_crystal",
 		description = "Teleport Arrow",
 		tiles = {"throwing_arrow_teleport.png", "throwing_arrow_teleport.png", "throwing_arrow_teleport_back.png", "throwing_arrow_teleport_front.png", "throwing_arrow_teleport_2.png", "throwing_arrow_teleport.png"},
 		allow_protected = true,
@@ -173,17 +194,24 @@ if get_setting("build_arrow") then
 		description = "Build Arrow",
 		tiles = {"throwing_arrow_build.png", "throwing_arrow_build.png", "throwing_arrow_build_back.png", "throwing_arrow_build_front.png", "throwing_arrow_build_2.png", "throwing_arrow_build.png"},
 		on_hit_sound = "throwing_build_arrow",
-		on_hit = function(self, _, last_pos, _, _, hitter)
+		on_hit = function(self, pos, last_pos, _, _, hitter)
 			if minetest.get_node(last_pos).name ~= "air" then
 				minetest.log("warning", "[throwing] BUG: node at last_pos was not air")
 				return
 			end
-			local playername = hitter:get_player_name()
-			if minetest.is_protected(last_pos, playername) then
-				minetest.record_protection_violation(last_pos, playername)
-				return false, "protected position"
+
+			local r_pos = vector.round(pos)
+			local r_last_pos = vector.round(last_pos)
+			-- Make sure that only one key is different
+			if r_pos.y ~= r_last_pos.y then
+				r_last_pos.x = r_pos.x
+				r_last_pos.z = r_pos.z
+			elseif r_pos.x ~= r_last_pos.x then
+				r_last_pos.y = r_pos.y
+				r_last_pos.z = r_pos.z
 			end
-			return minetest.place_node(last_pos, {name="default:obsidian_glass"})
+			minetest.registered_items["default:obsidian_glass"].on_place(ItemStack("default:obsidian_glass"), hitter,
+					{type="node", under=r_pos, above=r_last_pos})
 		end
 	})
 end
