@@ -8,6 +8,15 @@ dofile(minetest.get_modpath("hg_player") .. "/hud.lua")
 dofile(minetest.get_modpath("hg_player") .. "/pvp.lua")
 dofile(minetest.get_modpath("hg_player") .. "/ranking_formspec.lua")
 
+function hg_player.chat_send_map(map, message, irc_message)
+	for _, name in ipairs(map.players) do
+		minetest.chat_send_player(name, message)
+	end
+	if minetest.get_modpath("irc") then
+		irc.say(irc_message or message)
+	end
+end
+
 local function clear_inventory(player)
 	-- Inventory
 	local inv = player:get_inventory()
@@ -96,6 +105,7 @@ end)
 
 function hg_player.new_game(map)
 	local spawnpoints = table.copy(map.hg_nodes.spawnpoint)
+	local irc_message = string.format("New game on map %s with players:", map.name)
 	for _, name in ipairs(map.players) do
 		local player = minetest.get_player_by_name(name)
 
@@ -125,11 +135,13 @@ function hg_player.new_game(map)
 		})
 
 		-- Announce
-		minetest.chat_send_player(name, string.format("Welcome to map %s made by @%s!", map.name, map.author))
 		minetest.sound_play({name = "hg_player_match_start"}, {
 			to_player = name,
 		})
+
+		irc_message = irc_message .. " " .. name
 	end
+	hg_player.chat_send_map(map, string.format("Welcome to map %s made by @%s!", map.name, map.author), irc_message)
 end
 
 function hg_player.end_game(map)

@@ -154,12 +154,6 @@ function hg_map.update_map_offset(map)
 	end
 end
 
-function hg_map.chat_send_map(map, message)
-	for _, name in ipairs(map.players) do
-		minetest.chat_send_player(name, message)
-	end
-end
-
 function hg_map.clear_objects_map(map)
 	minetest.load_area(map.minp, map.maxp)
 

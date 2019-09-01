@@ -1,2 +1,3 @@
 hg_map
 hg_hunger
+irc?

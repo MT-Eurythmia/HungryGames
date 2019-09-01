@@ -151,9 +151,9 @@ function hg_match.killed_player(name, killer_name)
 
 	if killer_name then
 		map.scores[killer_name][name] = true
-		hg_map.chat_send_map(map, string.format("Player %s was killed by %s!", name, killer_name))
+		hg_player.chat_send_map(map, string.format("Player %s was killed by %s!", name, killer_name))
 	else
-		hg_map.chat_send_map(map, string.format("Player %s died!", name))
+		hg_player.chat_send_map(map, string.format("Player %s died!", name))
 	end
 
 	if #map.players < 2 then
