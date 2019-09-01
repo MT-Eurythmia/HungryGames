@@ -31,7 +31,7 @@ local function finalize_map(map)
 		splitted_stuff[k] = {}
 		local splitpoints = {}
 		for i = 1, #chests-1 do
-			table.insert(splitpoints, math.random(v))
+			table.insert(splitpoints, math.random(0, v))
 		end
 		table.sort(splitpoints)
 		splitted_stuff[k][1] = splitpoints[1] or 0 -- the or avoids crashing if there is only one chest
