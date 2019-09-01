@@ -161,6 +161,8 @@ function hg_map.chat_send_map(map, message)
 end
 
 function hg_map.clear_objects_map(map)
+	minetest.load_area(map.minp, map.maxp)
+
 	local center = vector.add(map.offset,
 		vector.round(vector.new(map.width / 2 + map.margin, map.height / 2, map.length / 2 + map.margin)))
 	local radius = math.ceil(math.sqrt(math.pow(map.width / 2 + map.margin, 2)
