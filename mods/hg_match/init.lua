@@ -78,6 +78,11 @@ function hg_match.new_game()
 	hg_player.new_game(map)
 	hg_match.call_registered_on_new_game(map, map.players)
 
+	-- Clear objects
+	minetest.after(0.1, function()
+		hg_map.clear_objects_map(map)
+	end)
+
 	return true
 end
 

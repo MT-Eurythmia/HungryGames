@@ -160,6 +160,20 @@ function hg_map.chat_send_map(map, message)
 	end
 end
 
+function hg_map.clear_objects_map(map)
+	local center = vector.add(map.offset,
+		vector.round(vector.new(map.width / 2 + map.margin, map.height / 2, map.length / 2 + map.margin)))
+	local radius = math.ceil(math.sqrt(math.pow(map.width / 2 + map.margin, 2)
+			+ math.pow(map.height / 2, 2)
+			+ math.pow(map.length / 2 + map.margin, 2)))
+	local objects = minetest.get_objects_inside_radius(center, radius)
+	for _, object in ipairs(objects) do
+		if not object:is_player() then
+			object:remove()
+		end
+	end
+end
+
 minetest.register_on_prejoinplayer(function(name, ip)
 	if not hg_map.spawn.ready then
 		return "Sorry, the map is not ready yet. Try again in a few minutes!"
