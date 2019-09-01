@@ -14,7 +14,7 @@ minetest.register_globalstep(function(dtime)
 
 			if map.build_countdown == 0 then
 				for _, name in ipairs(map.players) do
-					minetest.chat_send_player(name, "End of build time. Fight!")
+					minetest.chat_send_player(name, "End of building time. Fight!")
 					hg_player.remove_text_hud(minetest.get_player_by_name(name))
 					minetest.sound_play({name = "hg_player_build_end"}, {
 						to_player = name,
@@ -22,7 +22,7 @@ minetest.register_globalstep(function(dtime)
 				end
 				map.build_countdown = -1
 			else
-				local hud_text = string.format("Remaining build time: %d min %d s",
+				local hud_text = string.format("Remaining building time: %d min %d s",
 					math.floor(map.build_countdown / 60), map.build_countdown % 60)
 				for _, name in ipairs(map.players) do
 					hg_player.update_text_hud(minetest.get_player_by_name(name), hud_text)
